@@ -1,3 +1,4 @@
+#include "debug.h"
 #include "defs.h"
 #include "draw.h"
 #include "init.h"

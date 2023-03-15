@@ -19,8 +19,10 @@ unsigned long deltaTime;
 int main(int argc, char *argv[]) {
   initSDL();
   initGame();
+  // debug_InitTopDownView();
   unsigned long lastFrameTime = 0;
   unsigned long thisFrameTime = 1;
+  map[2 * mapWidth + 3] = 1;
   while (1) {
     deltaTime = thisFrameTime - lastFrameTime;
     prepare_scene();
@@ -28,10 +30,20 @@ int main(int argc, char *argv[]) {
     pollInput();
     handleInput();
     draw_scene();
-    SDL_Delay(100);
     lastFrameTime = thisFrameTime;
     thisFrameTime = SDL_GetTicks();
-    printf("\n%f,%f | %f | %lu", playerX, playerY, playerAngle, deltaTime);
+    printf("\n%f,%f | %f | %lu\n", playerX, playerY, playerAngle, deltaTime);
+    // debug_DrawTopDownView();
+    for (int i = 0; i < mapWidth; i++) {
+      for (int j = 0; j < mapHeight; j++) {
+        if ((int)round(playerX) == i && (int)round(playerY) == j) {
+          printf("#");
+          continue;
+        }
+        printf("%d", map[i * mapWidth + j]);
+      }
+      printf("\n");
+    }
   }
   return 0;
 }

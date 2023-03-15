@@ -1,11 +1,15 @@
 #include "draw.h"
+#include <math.h>
 
 float castRay(float angle) {
+  if (angle < 0) {
+    angle = 2 * PI - angle;
+  } else if (angle > 2 * PI) {
+    angle = angle - 2 * PI;
+  }
   float horizontalRay_Distance;
   float verticalRay_Distance;
 
-  float sinAngle = sin(angle);
-  float cosAngle = cos(angle);
   float tanAngle = tan(angle);
   float cotAngle = 1 / tanAngle;
 
@@ -24,16 +28,21 @@ float castRay(float angle) {
   } else {
     direction = -1;
   }
-  nextY = round(currentY - 0.5 * direction);
+  nextY = round(currentY);
   nextX = currentX + cotAngle * (currentY - nextY);
 
   totalY += currentY - nextY;
   totalX += currentX - nextX;
   while (1) {
-    if (nextY < 0.5 + 0.5 * direction || nextY > mapHeight - 1 || nextX < 0 ||
-        nextX > mapWidth - 1 ||
-        *(map + ((int)round(nextY - 0.5 - 0.5 * direction)) * mapWidth +
-          (int)round(nextX)) == 1) {
+    if (nextY >= 0 && nextY <= mapHeight - 1 && nextX >= 0 &&
+        nextX <= mapWidth - 1) {
+      if (map[(int)(round(nextY) * mapWidth + round(nextX))]) {
+        break;
+      }
+    } else if (sqrtf(totalX * totalX + totalY * totalY) > (float)DOF ||
+               isnan(totalX) || isnan(totalY)) {
+      totalX = DOF;
+      totalY = 0;
       break;
     }
     nextY += -1 * direction;
@@ -41,6 +50,8 @@ float castRay(float angle) {
 
     totalY += -1 * direction;
     totalX += cotAngle;
+    // printf("loop1 | %f,%f : %f\n", tanAngle, cotAngle,
+    //        sqrtf(totalX * totalX + totalY * totalY));
   }
   horizontalRay_Distance = sqrtf(totalX * totalX + totalY * totalY);
 
@@ -53,16 +64,22 @@ float castRay(float angle) {
   } else {
     direction = -1;
   }
-  nextX = round(currentX - 0.5 * direction);
+  nextX = round(currentX);
   nextY = currentY - tanAngle * (currentX - nextX);
 
   totalY += currentY - nextY;
   totalX += currentX - nextX;
   while (1) {
-    if (nextY < 0 || nextY > mapHeight - 1 || nextX < 0.5 + 0.5 * direction ||
-        nextX > mapWidth - 1 ||
-        *(map + ((int)round(nextY)) * mapWidth +
-          (int)round(nextX - 0.5 - 0.5 * direction)) == 1) {
+    if (nextY >= 0 && nextY <= mapHeight - 1 && nextX >= 0 &&
+        nextX <= mapWidth - 1) {
+      if (map[(int)(round(nextY) * mapWidth + round(nextX))]) {
+        // printf("| %d,%d |", (int)round(nextY), (int)round(nextX));
+        break;
+      }
+    } else if (sqrtf(totalX * totalX + totalY * totalY) > (float)DOF ||
+               isnan(totalX) || isnan(totalY)) {
+      totalY = 8;
+      totalX = 0;
       break;
     }
     nextX += -1 * direction;
@@ -70,6 +87,8 @@ float castRay(float angle) {
 
     totalX += -1 * direction;
     totalY += tanAngle;
+    // printf("loop2 | %f,%f : %f\n", totalX, totalY,
+    //        sqrtf(totalX * totalX + totalY * totalY));
   }
   verticalRay_Distance = sqrtf(totalX * totalX + totalY * totalY);
   // printf("%f | %f\n", horizontalRay_Distance, verticalRay_Distance);
@@ -86,17 +105,18 @@ void prepare_scene(void) {
 void draw_scene(void) {
   printf("\n_____________________________________\n");
   for (int i = 0; i < LOGICAL_SCREEN_WIDTH; i++) {
-    float distance = castRay(playerAngle - (fovInRad / 2) +
-                             i * (fovInRad / LOGICAL_SCREEN_WIDTH));
+    float deltaAngle = (fovInRad / 2) - i * (fovInRad / LOGICAL_SCREEN_WIDTH);
+    float rayAngle = playerAngle + deltaAngle;
+    float distance = castRay(rayAngle);
     if (distance == 0) {
-      distance = 0.1;
+      distance = 0.0001;
     }
-    int height = 1 / distance * LOGICAL_SCREEN_HEIGHT;
+    int height = (1 / (distance * cos(deltaAngle))) * LOGICAL_SCREEN_HEIGHT;
 
     SDL_SetRenderDrawColor(renderer, 1 / distance * 255, 1 / distance * 255,
                            1 / distance * 255, 255);
-    SDL_RenderDrawLine(renderer, i, LOGICAL_SCREEN_HEIGHT * 0.5 + height * 0.5,
-                       i, LOGICAL_SCREEN_HEIGHT * 0.5 - height * 0.5);
+    SDL_RenderDrawLine(renderer, i, LOGICAL_SCREEN_HEIGHT * 0.5 + height * 0.1,
+                       i, LOGICAL_SCREEN_HEIGHT * 0.5 - height * 0.1);
   }
   printf("%f", castRay(playerAngle));
   SDL_RenderPresent(renderer);

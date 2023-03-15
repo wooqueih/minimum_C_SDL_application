@@ -53,22 +53,30 @@ void handleInput(void) {
     // if (castRay(playerAngle) < 0.5) {
     //   return;
     // }
-    playerX += sin(playerAngle) * SPEED;
-    playerY += cos(playerAngle) * SPEED;
+    playerX += cos(playerAngle) * SPEED * deltaTime;
+    playerY -= sin(playerAngle) * SPEED * deltaTime;
   }
   if (key_S_isDown) {
     // if (castRay(fmod(playerAngle + PI, PI * 2)) < 0.5) {
     //   return;
     // }
-    playerX -= sin(playerAngle) * SPEED;
-    playerY -= cos(playerAngle) * SPEED;
+    playerX -= cos(playerAngle) * SPEED * deltaTime;
+    playerY += sin(playerAngle) * SPEED * deltaTime;
   }
   if (key_A_isDown) {
     playerAngle += LOOK_SENSITIVITY * deltaTime;
-    playerAngle = fmod(playerAngle, PI * 2);
+    if (playerAngle < 0) {
+      playerAngle = 2 * PI - playerAngle;
+    } else if (playerAngle > 2 * PI) {
+      playerAngle = playerAngle - 2 * PI;
+    }
   }
   if (key_D_isDown) {
     playerAngle -= LOOK_SENSITIVITY * deltaTime;
-    playerAngle = fmod(playerAngle, PI * 2);
+    if (playerAngle < 0) {
+      playerAngle = 2 * PI - playerAngle;
+    } else if (playerAngle > 2 * PI) {
+      playerAngle = playerAngle - 2 * PI;
+    }
   }
 }
