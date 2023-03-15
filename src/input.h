@@ -1,3 +1,6 @@
 #include "defs.h"
+#include "draw.h"
+#include <math.h>
 
-void handle_input(void);
+void pollInput(void);
+void handleInput(void);

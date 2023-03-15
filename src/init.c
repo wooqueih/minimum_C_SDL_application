@@ -1,6 +1,4 @@
 #include "init.h"
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_surface.h>
 
 void initSDL(void) {
   int rendererFlags, windowFlags, surfaceFlags;
@@ -41,4 +39,24 @@ void initSDL(void) {
   // LOGICAL_SCREEN_WIDTH,
   //                                          LOGICAL_SCREEN_HEIGHT, 32,
   //                                          SDL_PIXELFORMAT_RGBA32);
+}
+
+void initGame(void) {
+  mapWidth = 10;
+  mapHeight = 10;
+  mapSize = mapHeight * mapWidth;
+  map = malloc(mapSize);
+  for (int i = 0; i < mapWidth; i++) {
+    for (int j = 0; j < mapHeight; j++) {
+      unsigned char *ptr = map + (i * mapWidth) + j;
+      if (j == 0 || i == 0 || j == mapWidth - 1 || i == mapHeight - 1) {
+        *ptr = 1;
+      } else {
+        *ptr = 0;
+      }
+    }
+  }
+  playerX = 2;
+  playerY = 7;
+  playerAngle = 0;
 }
